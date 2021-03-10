@@ -106,8 +106,45 @@ int main(int _argc, char** _argv) {
     std::vector<geographic_msgs::GeoPoint> path_geopoint = path_planner_geopoint.getPathWithRelativeAltitude(initial_geopoint, final_geopoint, 420.0);
 
 
-    // grvc::PathPlanner path_planner_pointstamped = grvc::PathPlanner(obstacle_polygon_vector_cartesian, geofence_polygon_cartesian);
-    // std::vector<geometry_msgs::PointStamped> path_pointstamped = path_planner_pointstamped.getPath(initial_pointstamped, final_pointstamped);
+
+
+    std::vector<geometry_msgs::Polygon> obstacle_polygon_vector_cartesian2;
+    geometry_msgs::Polygon geofence_polygon_cartesian2;
+
+    geometry_msgs::Polygon current_polygon_point_cartesian;
+    geometry_msgs::Point32 current_point_cartesian;
+
+    current_point_cartesian.x = 5020;  current_point_cartesian.y = 2050;
+    current_polygon_point_cartesian.points.push_back(current_point_cartesian);
+    current_point_cartesian.x = 2100;  current_point_cartesian.y = 5020;
+    current_polygon_point_cartesian.points.push_back(current_point_cartesian);
+    current_point_cartesian.x = 5300;  current_point_cartesian.y = 8040;
+    current_polygon_point_cartesian.points.push_back(current_point_cartesian);
+    current_point_cartesian.x = 8070;  current_point_cartesian.y = 5200;
+    current_polygon_point_cartesian.points.push_back(current_point_cartesian);
+    current_point_cartesian.x = 6560;  current_point_cartesian.y = 3000;
+    current_polygon_point_cartesian.points.push_back(current_point_cartesian);
+    current_point_cartesian.x = 5020;  current_point_cartesian.y = 2050;
+    current_polygon_point_cartesian.points.push_back(current_point_cartesian);
+    obstacle_polygon_vector_cartesian2.push_back(current_polygon_point_cartesian);
+
+    current_point_cartesian.x = 0;    current_point_cartesian.y = 0;
+    geofence_polygon_cartesian2.points.push_back(current_point_cartesian);
+    current_point_cartesian.x = 0;    current_point_cartesian.y = 10000;
+    geofence_polygon_cartesian2.points.push_back(current_point_cartesian);
+    current_point_cartesian.x = 10000;    current_point_cartesian.y = 10000;
+    geofence_polygon_cartesian2.points.push_back(current_point_cartesian);
+    current_point_cartesian.x = 10000;    current_point_cartesian.y = 0;
+    geofence_polygon_cartesian2.points.push_back(current_point_cartesian);
+    current_point_cartesian.x = 0;    current_point_cartesian.y = 0;
+    geofence_polygon_cartesian2.points.push_back(current_point_cartesian);
+
+    geometry_msgs::Point32 initial_point_cartesian, final_point_cartesian;
+    initial_point_cartesian.x = 9000;  initial_point_cartesian.y = 6000; initial_point_cartesian.z = 10;
+    final_point_cartesian.x = 1000;    final_point_cartesian.y = 3000;   final_point_cartesian.z = 20;
+
+    grvc::PathPlanner path_planner_cartesian = grvc::PathPlanner(obstacle_polygon_vector_cartesian2, geofence_polygon_cartesian2);
+    std::vector<geometry_msgs::Point32> path_point = path_planner_cartesian.getPath(initial_point_cartesian, final_point_cartesian);
 
 
     return 0;

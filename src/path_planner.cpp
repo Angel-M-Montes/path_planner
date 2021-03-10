@@ -523,66 +523,60 @@ std::vector<geometry_msgs::PointStamped> PathPlanner::getPath(const geometry_msg
             std::reverse(path_cells.begin(),path_cells.end());    // The path_cells right now is reversed (last waypoint first), so the order is corrected.
 
             // path_cells has too much waypoints right now. Waypoints where there isn't a change of direction are annotated as redundant elements.
-            current = 1;
             std::vector<unsigned int> redundant_elements;
-            while ( not( ((unsigned int)path_cells[current].point.y == final_point_in_grid_y ) && ((unsigned int)path_cells[current].point.x == final_point_in_grid_x ) ) ) {
-                if ( (path_cells[current-1].point.x-path_cells[current].point.x==path_cells[current].point.x-path_cells[current+1].point.x) && (path_cells[current-1].point.y-path_cells[current].point.y==path_cells[current].point.y-path_cells[current+1].point.y) )
-                    redundant_elements.push_back(current);
+            for (int i=1; i<path_cells.size()-1; i++) {
+                if ( (path_cells[i-1].point.x-path_cells[i].point.x==path_cells[i].point.x-path_cells[i+1].point.x) && (path_cells[i-1].point.y-path_cells[i].point.y==path_cells[i].point.y-path_cells[i+1].point.y) )
+                    redundant_elements.push_back(i);
                 current++;
             }
 
-            std::vector<unsigned int> elements_to_be_erased;
-            if ( _movement_pattern ) {    // _movement_pattern == 1 means that the agent moves only horizontally, vertically and diagonally (the movement contemplated in the grid), in other words angles multiple of 45º. Just the redundant elements will be erased, no visibility calculation is needed.
-                elements_to_be_erased = redundant_elements;
-            } else {                      // _movement_pattern == 0 means that the agent can move in any direction. For this a visibility post-process have to be done inside the path.
+            if ( !_movement_pattern ) {
+                // _movement_pattern == 1 means that the agent moves only horizontally, vertically and diagonally (the movement contemplated in the grid), in other words angles multiple of 45º. Just the redundant elements will be erased, no visibility calculation is needed.
+                // _movement_pattern == 0 means that the agent can move in any direction. For this a visibility post-process have to be done inside the path.
+
                 // The elements that are not redundant are the ones that have change of direction.
                 std::vector<unsigned int> change_of_direction_elements;
                 for ( int i=0; i<path_cells.size(); i++) change_of_direction_elements.push_back(i);
                 for ( int i=redundant_elements.size()-1; i>=0; i-- ) change_of_direction_elements.erase(change_of_direction_elements.begin()+redundant_elements[i]);
 
-                // Visibility post-process with the path:
                 std::vector<unsigned int> final_path_elements;
-                current=0;
-                final_path_elements.push_back(change_of_direction_elements[current]);   // Insert the first point always in "final_path_elements"
-                unsigned int test_cell;
-                while ( current < change_of_direction_elements.size()-1 ) {             // Visibility loop
-                    if ( current < change_of_direction_elements.size()-2 ) {
-                        bool collision_flag;
-                        for ( test_cell=change_of_direction_elements[current+2]; test_cell>change_of_direction_elements[current+1]; test_cell-- ) {      // change_of_direction_elements[test_cell] is contained between change_of_direction_elements[current+2] and change_of_direction_elements[current+1]. A visibility loop is done in the segment between change_of_direction_elements[test_cell] and change_of_direction_elements[current].
-                            unsigned int first_x_segment_cell = (unsigned int) path_cells[change_of_direction_elements[current]].point.x;
-                            unsigned int first_y_segment_cell = (unsigned int) path_cells[change_of_direction_elements[current]].point.y;
-                            unsigned int last_x_segment_cell = (unsigned int) path_cells[test_cell].point.x;
-                            unsigned int last_y_segment_cell = (unsigned int) path_cells[test_cell].point.y;
-                            std::vector< std::pair<double,double> > points_intersections_of_segment_with_grid = calculateIntersectionsOfSegmentWithGrid ( (first_x_segment_cell+0.5)*x_cell_width_ , (first_y_segment_cell+0.5)*y_cell_width_ , (last_x_segment_cell+0.5)*x_cell_width_ , (last_y_segment_cell+0.5)*y_cell_width_ );
 
-                            collision_flag = checkCollisionByVisibility (points_intersections_of_segment_with_grid);
+                // Visibility post-process with the path:
+                int from_this_change_of_direction_index = 0;
+                final_path_elements.push_back(change_of_direction_elements[from_this_change_of_direction_index]);
+                while (from_this_change_of_direction_index<change_of_direction_elements.size()-1) {
+                    bool collision_flag = true;
+                    int to_this_change_of_direction_index;
+                    unsigned int first_x_segment_cell, first_y_segment_cell, last_x_segment_cell, last_y_segment_cell;
+                    for (to_this_change_of_direction_index = change_of_direction_elements.size()-1; to_this_change_of_direction_index > from_this_change_of_direction_index+1; to_this_change_of_direction_index--) {
+                        first_x_segment_cell = (unsigned int) path_cells[change_of_direction_elements[from_this_change_of_direction_index]].point.x;
+                        first_y_segment_cell = (unsigned int) path_cells[change_of_direction_elements[from_this_change_of_direction_index]].point.y;
+                        last_x_segment_cell  = (unsigned int) path_cells[change_of_direction_elements[  to_this_change_of_direction_index]].point.x;
+                        last_y_segment_cell  = (unsigned int) path_cells[change_of_direction_elements[  to_this_change_of_direction_index]].point.y;
 
-                            if ( collision_flag == 0 ) break;    // If the actual segment is valid, break the loop.
-                        }
-                        if ( collision_flag==0 ) {            // if a shortest arc between current and test_cell has been found by the visibility loop, save it.
-                            final_path_elements.push_back(test_cell);
-                            if ( test_cell == change_of_direction_elements[current+2] ) {    // The point visible is [current+1]
-                                current = current+2;
-                            } else {                                                         // The point visible is another
-                                change_of_direction_elements[current+1]=test_cell;
-                                current++;
-                            }
-                        } else if ( collision_flag==1 ) {       // if a shortest arc between current and test_cell has NOT been found by the visibility loop, just insert the next change_of_direction_element.
-                            final_path_elements.push_back(change_of_direction_elements[current+1]);
-                            current++;
-                        }
-                    } else if ( current == change_of_direction_elements.size()-2 ) {  // Insert the last element if the visibility loop didn't jump the second-to-last.
-                        final_path_elements.push_back(change_of_direction_elements[change_of_direction_elements.size()-1]);
-                        break;
+                        std::vector< std::pair<double,double> > points_intersections_of_segment_with_grid = calculateIntersectionsOfSegmentWithGrid ( (first_x_segment_cell+0.5)*x_cell_width_ , (first_y_segment_cell+0.5)*y_cell_width_ , (last_x_segment_cell+0.5)*x_cell_width_ , (last_y_segment_cell+0.5)*y_cell_width_ );
+
+                        collision_flag = checkCollisionByVisibility (points_intersections_of_segment_with_grid);
+
+                        if ( !collision_flag ) break;   // If the actual segment is valid, break the loop.
+                    }
+                    if ( !collision_flag ) {    // if a shortest arc between current and test_cell has been found by the visibility loop, save it.
+                        final_path_elements.push_back(change_of_direction_elements[to_this_change_of_direction_index]);
+                        from_this_change_of_direction_index = to_this_change_of_direction_index;
+                    } else {                    // if a shortest arc between current and test_cell has NOT been found by the visibility loop, just insert the next change_of_direction_element.
+                        final_path_elements.push_back(change_of_direction_elements[from_this_change_of_direction_index+1]);
+                        from_this_change_of_direction_index += 1;
                     }
                 }
-                // Those elements that aren't in "final_path_elements" are stored in "elements_to_be_erased".
-                for ( int i=0; i<path_cells.size(); i++) elements_to_be_erased.push_back(i);
-                for ( int i=final_path_elements.size()-1; i>=0; i-- ) elements_to_be_erased.erase(elements_to_be_erased.begin()+final_path_elements[i]);
+
+                // Those elements that aren't in "final_path_elements" are stored as "redundant_elements".
+                redundant_elements.clear();
+                for ( int i=0; i<path_cells.size(); i++) redundant_elements.push_back(i);
+                for ( int i=final_path_elements.size()-1; i>=0; i-- ) redundant_elements.erase(redundant_elements.begin()+final_path_elements[i]);
             }
 
             // Finally, the elements to be erased are erased from path_cell.
-            for (int i=elements_to_be_erased.size()-1; i>=0; i--) path_cells.erase(path_cells.begin()+elements_to_be_erased[i]);
+            for (int i=redundant_elements.size()-1; i>=0; i--) path_cells.erase(path_cells.begin()+redundant_elements[i]);
 
             // Up until now the path has been calculated with waypoints in the middle of the grid. Now the real trajectory will be calculated, wich will contain the destination point, taking into account the initial position of the robot.
             // First, if the center of the second waypoint cell can be reached from the initial position of the robot without collision (they are in the same horizontal, vertical, or visible) then the first waypoint is ignored. If not, the first waypoint will be ignored too but adding an auxiliar waypoint.
