@@ -49,11 +49,6 @@
 
 #include <geographic_to_cartesian.h>
 
-// #define VERBOSE                      // Uncoment for outputting hints or warnings in the terminal when the path couldn't be found.
-// #define WRITE_RESULTS_IN_TERMINAL    // Uncoment for outputting in the terminal the path of points, path distance, computation time and other useful information.
-// #define DRAW_IN_TERMINAL             // Uncoment for drawing in the terminal the path with the geofence and map of obstacles. Draw both in the constructor and in the getPath method, in this one with the path.
-// #define PLOT_GRAPH                   // Uncoment for plotting a graphic (using matplotlib-cpp) of the path (grid path and real path), geofence and map of obstacles. Plot both in the constructor and in the getPath method, in this one with the path.
-
 namespace grvc {
 
 enum struct ResultLastPath {OK, ERROR_INI_AND_END_OUTSIDE_MAP, ERROR_INI_OUTSIDE_MAP, ERROR_END_OUTSIDE_MAP, ERROR_INI_AND_END_OUTSIDE_GEOFENCE, ERROR_INI_OUTSIDE_GEOFENCE, ERROR_END_OUTSIDE_GEOFENCE, ERROR_INI_AND_END_INSIDE_OBSTACLE_POLYGON, ERROR_INI_INSIDE_OBSTACLE_POLYGON, ERROR_END_INSIDE_OBSTACLE_POLYGON, ERROR_INI_AND_END_INSIDE_GRID_OBSTACLE_LOW_RES, ERROR_INI_INSIDE_GRID_OBSTACLE_LOW_RES, ERROR_END_INSIDE_GRID_OBSTACLE_LOW_RES, ERROR_PATH_NOT_POSSIBLE, UNINITIATED};

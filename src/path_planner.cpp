@@ -44,6 +44,11 @@
 #include <algorithm>
 #include <curl/curl.h>
 
+// #define VERBOSE                      // Uncoment for outputting hints or warnings in the terminal when the path couldn't be found.
+// #define WRITE_RESULTS_IN_TERMINAL    // Uncoment for outputting in the terminal the path of points, path distance, computation time and other useful information.
+// #define DRAW_IN_TERMINAL             // Uncoment for drawing in the terminal the path with the geofence and map of obstacles. Draw both in the constructor and in the getPath method, in this one with the path.
+// #define PLOT_GRAPH                   // Uncoment for plotting a graphic (using matplotlib-cpp) of the path (grid path and real path), geofence and map of obstacles. Plot both in the constructor and in the getPath method, in this one with the path.
+
 #ifdef PLOT_GRAPH
 #include "matplotlibcpp.h"      // matplotlib-cpp has a MIT License (MIT), Copyright (c) 2014 Benno Evers. The full license description of matplotlib, matplotlib-cpp and its README can be found at its root.
 namespace plt = matplotlibcpp;  // namespace-alias-definition: makes a synonym of another namespace: see namespace alias
@@ -578,7 +583,7 @@ std::vector<geometry_msgs::PointStamped> PathPlanner::getPath(const geometry_msg
             // Finally, the elements to be erased are erased from path_cell.
             for (int i=redundant_elements.size()-1; i>=0; i--) path_cells.erase(path_cells.begin()+redundant_elements[i]);
 
-            // Up until now the path has been calculated with waypoints in the middle of the grid. Now the real trajectory will be calculated, wich will contain the destination point, taking into account the initial position of the robot.
+            // Up until now the path has been calculated with waypoints in the middle of the grid. Now the real trajectory will be calculated, which will contain the destination point, taking into account the initial position of the robot.
             // First, if the center of the second waypoint cell can be reached from the initial position of the robot without collision (they are in the same horizontal, vertical, or visible) then the first waypoint is ignored. If not, the first waypoint will be ignored too but adding an auxiliar waypoint.
             std::vector< std::pair<double,double> > points_intersections_of_segment_with_grid;
             bool collision_flag;
