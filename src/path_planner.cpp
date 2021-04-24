@@ -440,19 +440,19 @@ std::vector<geometry_msgs::PointStamped> PathPlanner::getPath(const geometry_msg
     if ( (no_fly_zones_[initial_point_in_grid_y][initial_point_in_grid_x]==1)||(no_fly_zones_[final_point_in_grid_y][final_point_in_grid_x]==1) ) {
         if ( (no_fly_zones_[initial_point_in_grid_y][initial_point_in_grid_x]==1)&&(no_fly_zones_[final_point_in_grid_y][final_point_in_grid_x]==1) ) {
 #if defined(VERBOSE) || defined(WRITE_RESULTS_IN_TERMINAL) || defined(DRAW_IN_TERMINAL) || defined(PLOT_GRAPH)
-            ROS_WARN("Path Planner: initial and final points inside obstacle cells, even though they aren't inside polygon obstacles. You might need to increase the grid resolution. Returning empty path.");
+            ROS_WARN("Path Planner: initial and final points inside obstacle cells, even though they aren't inside polygon obstacles. You might need to increase the grid size. Returning empty path.");
             std::cout << "Printing initial point: " << _initial_point_stamped << std::endl << "Printing final point: " << _final_point_stamped << std::endl;
 #endif
             ResultLastPath result_last_path_ = ResultLastPath::ERROR_INI_AND_END_INSIDE_GRID_OBSTACLE_LOW_RES;
         } else if ( no_fly_zones_[initial_point_in_grid_y][initial_point_in_grid_x]==1 ) {
 #if defined(VERBOSE) || defined(WRITE_RESULTS_IN_TERMINAL) || defined(DRAW_IN_TERMINAL) || defined(PLOT_GRAPH)
-            ROS_WARN("Path Planner: initial point inside an obstacle cell, even though it isn't inside a polygon obstacle. You might need to increase the grid resolution. Returning empty path.");
+            ROS_WARN("Path Planner: initial point inside an obstacle cell, even though it isn't inside a polygon obstacle. You might need to increase the grid size. Returning empty path.");
             std::cout << "Printing initial point: " << _initial_point_stamped << std::endl << "Printing final point: " << _final_point_stamped << std::endl;
 #endif
             ResultLastPath result_last_path_ = ResultLastPath::ERROR_INI_INSIDE_GRID_OBSTACLE_LOW_RES;
         } else if ( no_fly_zones_[final_point_in_grid_y][final_point_in_grid_x]==1 ) {
 #if defined(VERBOSE) || defined(WRITE_RESULTS_IN_TERMINAL) || defined(DRAW_IN_TERMINAL) || defined(PLOT_GRAPH)
-            ROS_WARN("Path Planner: final point inside an obstacle cell, even though it isn't inside a polygon obstacle. You might need to increase the grid resolution. Returning empty path.");
+            ROS_WARN("Path Planner: final point inside an obstacle cell, even though it isn't inside a polygon obstacle. You might need to increase the grid size. Returning empty path.");
             std::cout << "Printing final point: " << _final_point_stamped << std::endl;
 #endif
             ResultLastPath result_last_path_ = ResultLastPath::ERROR_END_INSIDE_GRID_OBSTACLE_LOW_RES;
