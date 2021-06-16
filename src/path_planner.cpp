@@ -1032,6 +1032,13 @@ std::vector<geographic_msgs::GeoPoint> PathPlanner::getPathWithAbsoluteAltitude(
 
     std::vector<geographic_msgs::GeoPoint> path_to_return = getPath(_initial_geopoint, _final_geopoint, _movement_pattern);
 
+    if (path_to_return.size()==0) {
+#if defined(VERBOSE) || defined(WRITE_RESULTS_IN_TERMINAL) || defined(DRAW_IN_TERMINAL) || defined(PLOT_GRAPH)
+        ROS_WARN("Path Planner: returning empty geopath without elevations.");
+#endif
+        return empty_path_to_return;
+    }
+
     std::vector<float> elevations = getElevations(path_to_return);
 
     if (elevations.size()==0) {
@@ -1079,6 +1086,7 @@ std::vector<float> PathPlanner::getElevations(const std::vector<geographic_msgs:
             url.append(",");
             url.append(std::to_string(_geopoints[i].longitude).c_str());
         }
+        // std::cout << url << std::endl;
 
         // Get string data to the readBuffer from the URL with cURL:
         curl_easy_setopt(curl, CURLOPT_URL, url.c_str());
